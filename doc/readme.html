@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<script type="text/javascript">
+			function gentoc(toc,node){
+				var p = document.createElement("p");
+				p.setAttribute("style","margin-left:2em;");
+				var c = node.childNodes;
+				for(var i = 0;i < c.length;i++){
+					if(c[i].nodeType != 1 || c[i].nodeName != "SECTION"){
+						continue;}
+					var a = document.createElement("a");
+					a.setAttribute("href","#" + c[i].getAttribute("id"));
+					a.textContent = c[i].getAttribute("name");
+					p.appendChild(a);
+					gentoc(p,c[i]);}
+				toc.appendChild(p);}
+		</script>
+		<style type="text/css">
+			h1{
+				border-bottom:thin solid red;
+				font-size:150%;}
+			h2{font-size:125%;}
+			img{vertical-align:top;}
+			table,td,th{
+				border-collapse:collapse;
+				border:thin solid black;}
+			section > section{margin-left:2em;}
+		</style>
+	</head>
+	<body onload="gentoc(document.getElementById('toc'),document.body)">
+		<p align="center">Blender Map Exporter v2.0 Documentation<br>Modified: 4/29/2015<br>by Xembie</p>
+		<h1>Table of Contents</h1>
+		<div id="toc">
+		</div>
+		<section id="install" name="Installation">
+			<h1>Installation</h1>
+			<ol>
+				<li>Go to File&rarr;User Preferences.<img src="installation_preferences.png"/></li>
+				<li>Select &ldquo;Install from File...&rdquo;.<img src="installation_installfromfile.png"/>
+				<li>Select the file &ldquo;BlenderQuakeGameMapExp2.zip&rdquo; and click &ldquo;Install from File...&rdquo;.<img src="installation_installfromfiledone.png"/></li>
+				<li>Type &ldquo;quake&rdquo; in the preferences search text box located at the top left.  Check the plug-in's check-box and click &ldquo;Save User Settings&rdquo;.<img src="installation_activatesave.png"/></li>
+			</ol>
+		</section>
+		<section id="define" name="Definitions">
+			<h1>Definitions</h1>
+			<table width="100%" id="define_table">
+				<tr>
+					<td id="def_convex">Convex mesh</td>
+					<td>A cave or dent does not exist within a convex mesh.<img src="definitions_convex.png"/></td>
+				</tr>
+				<tr>
+					<td id="def_coplanar">Coplanar face</td>
+					<td>All points of a face exist on the same plane.<img src="definitions_coplanar.png"/></td>
+				</tr>
+				<tr>
+					<td id="def_normal">Normal</td>
+					<td>A directional vector that usually indicates the direction of a face.  It can be calculated by the cross product of the 3 vertices in a certain order.<img src="definitions_normal.png"/></td>
+				</tr>
+				<tr>
+					<td id="def_brush">Map brush or convex hull</p>
+					<td>A set of planes that intersect to form a <a href="#def_convex">convex</a> object.<img src="definitions_brush.png"/></td>
+				</tr>
+				<tr>
+					<td id="def_q3map2">Q3Map2</td>
+					<td>BSP compiler that converts map files.</td>
+				</tr>
+				<tr>
+					<td id="def_models">Models</td>
+					<td>Meshes that will become OBJ or MD3 format files.  An OBJ will be exported if a <a href="#def_uvmap">UV map</a> exists and the Animation check-box is unchecked within the <a href="#def_objectpanel">object panel</a>.  An MD3 will be exported if a <a href="#def_uvmap">UV map</a> exists and the Animation check-box is checked.</td>
+				</tr>
+				<tr>
+					<td id="def_uvmap">UV map</td>
+					<td>Coordinates within [0,1] for each vertex of every face that corresponds with a position on a texture.<img src="definitions_uvmap.png"/></td>
+				</tr>
+				<tr>
+					<td id="def_baking">Baking</td>
+					<td>Procedure done after setting up a <a href="#def_uvmap">UV map</a>, texture image with nodes, and setting up all objects within the scene.  This process will fill up the texture image with a render of the material and lighting environment.  <a href="#def_cycles">Cycles</a> is the preferred render system for texture images.<img src="definitions_baking.png"/></td>
+				</tr>
+				<tr>
+					<td id="def_cycles">Cycles render</td>
+					<td>An alternate option to Blender's default renderer.<img src="definitions_cycles.png"/></td>
+				</tr>
+				<tr>
+					<td id="def_textureimage">Texture Image Node</td>
+					<td>Added by selecting an object, going to the &ldquo;Node Editor&rdquo; window, checking &ldquo;Use Nodes&rdquo;, and selecting Add&rarr;Texture&rarr;Image Texture.<img src="definitions_textureimage.png"/></td>
+				</tr>
+				<tr>
+					<td id="def_entities">Entities</td>
+					<td>Map entities can be point types like lights and cameras, or made up of brushes like triggers and movers.</td>
+				</tr>
+				<tr>
+					<td id="def_objectpanel">Object panel</td>
+					<td>Exists in the &ldquo;Object&rdquo; tab from within the &ldquo;Properties&rdquo; panel.  Contains options for <a href="#def_brush">brushes</a>, <a href="#def_models">models</a>, <a href="#def_entities">entities</a>, and lights.<img src="definitions_objectpanel.png"/></td>
+				</tr>
+				<tr>
+					<td id="def_materialpanel">Material panel</td>
+					<td>Exists in the &ldquo;Material&rdquo; tab from within the &ldquo;Properties&rdquo; panel.  Contains options for <a href="#def_brush">brushes</a> and <a href="#def_models">models</a>.<img src="definitions_materialpanel.png"/></td>
+				</tr>
+				<tr>
+					<td id="def_miscpanel">Misc panel</td>
+					<td>Located on the left side of the 3D viewport.<img src="definitions_miscpanel.png"/></td>
+				</tr>
+			</table>
+		</section>
+		<section id="brush" name="Brushes">
+			<h1>Brushes</h1>
+			<p>If an object does not have the &ldquo;<a href="#def_convex">Convex</a> <a href="#def_brush">Brushes</a>&rdquo; option or does not have a <a href="#def_uvmap">UV map</a>, the object will be exported as a <a href="#def_brush">brush</a>.  A <a href="#def_models">model</a> can have <a href="#def_brush">brushes</a> if the &ldquo;<a href="#def_models">Model</a> <a href="#def_brush">Brush</a>&rdquo; option is active from the <a href="#def_objectpanel">object panel</a>.  Each face of the mesh will become a separate <a href="#def_brush">brush</a> with adjustable thickness or width.  The generated <a href="#def_brush">brush</a> will be grouped in a &ldquo;func_group&rdquo; per object unless the &ldquo;Classname&rdquo; option is set from the <a href="#def_objectpanel">object panel</a>.  Check out the &ldquo;Quake Map Options&rdquo; box in the <a href="#def_materialpanel">material panel</a>.</p>
+			<ol>
+				<li>Make sure all faces are <a href="#def_coplanar">coplanar</a>.  Check out the &ldquo;Split Non-Planar Faces&rdquo; operator.</li>
+				<li>Check the face <a href="#def_normal">normals</a> because the generated pyramid or cone will be opposite of the <a href="#def_normal">normal</a>.</li>
+			</ol>
+			<section id="convexbrush" name="Convex and Volume Brushes">
+				<h2>Convex and Volume Brushes</h2>
+				<p>This option is used to create a <a href="#def_brush">brush</a> with volume such as for triggers, water, and lava.</p>
+				<ol>
+					<li>Make sure all face are <a href="#def_coplanar">coplanar</a>.  Check out the &ldquo;Split Non-Planar Faces&rdquo; operator.</li>
+					<li>Make sure each separate mesh of the object is a <a href="#def_convex">convex</a> shape. Check out the &ldquo;<a href="#def_convex">Convex</a> Hull&rdquo; and &ldquo;Separate&rdquo; operator.</li>
+					<li>Remove all stray faces that do not form a full <a href="#def_convex">convex</a> <a href="#def_brush">brush</a>.</li>
+					<li>Activate the &ldquo;<a href="#def_convex">Convex</a> <a href="#def_brush">Brushes</a>&rdquo; option in the <a href="#def_objectpanel">object panel</a>.</li>
+				</ol>
+			</section>
+		</section>
+		<section id="models" name="Models">
+			<h1>Models</h1>
+			<p>Objects will be exported as a <a href="#def_models">model</a> if it has a <a href="#def_uvmap">UV map</a>.  Unlike a <a href="#def_brush">brush</a>, the <a href="#def_models">model</a> will be saved as a separate file and have a shader appended to the shader file (specified at export).  A <a href="#def_models">model</a> can either be in static <a href="#obj">OBJ</a> or animated <a href="#md3">MD3</a> format.  <a href="#md3">MD3</a> is limited in vertex count, face count, and more; but can contain tags and animations.  Use Blender's &ldquo;<a href="#def_convex">Convex</a> Hull&rdquo; operator to create a bounding <a href="#def_brush">brush</a> quickly.  Check out the &ldquo;Quake Map Options&rdquo; box in the <a href="#def_materialpanel">Material panel</a>.  Also, try using <a href="http://meshlab.sourceforge.net/">Meshlab</a> as an alternative to Blender's &ldquo;Decimate&rdquo; modifier.</p>
+			<section id="obj" name="OBJ">
+				<h2>OBJ</h2>
+				<ol>
+					<li>Create a <a href="#def_uvmap">UV map</a>, UV image, material, and <a href="#def_baking">bake</a>.  <a href="#def_cycles">Cycles</a> render requires an <a href="#def_textureimage">image texture node</a> to <a href="#def_baking">bake</a>.</li>
+					<li>Add a &ldquo;Triangulate&rdquo; modifier.</li>
+				</ol>
+			</section>
+			<section id="md3" name="MD3">
+				<h2>MD3</h2>
+				<ol>
+					<li>Follow the previous procedure for <a href="#obj">OBJ</a> but activate the &ldquo;Animation&rdquo; option in the <a href="#def_objectpanel">object panel</a>.</li>
+					<li>To add tags, parent an empty to the object and activate &ldquo;Do Not Export&rdquo; for the empty from the <a href="#def_objectpanel">object panel</a>.</li>
+				</ol>
+			</section>
+		</section>
+		<section id="ents" name="Entities">
+			<h1>Entities</h1>
+			<p>All <a href="#def_entities">entity</a> types can be created with empties or <a href="#def_brush">brush</a> objects by adjusting the &ldquo;<a href="#def_entities">Entity</a> Properties&rdquo; options in the <a href="#def_objectpanel">object panel</a>.</p>
+			<section id="spotlights" name="Spot Lights">
+				<h2>Spot Lights</h2>
+				<ol>
+					<li>Add a light object as a spot lamp.</li>
+					<li>Set the &ldquo;Classname&rdquo; in the <a href="#def_objectpanel">object panel</a> to either &ldquo;light&rdquo; or &ldquo;lightjr&rdquo;.</li>
+					<li>Method 1: Add an empty or select another object and add a &ldquo;Track_To&rdquo; modifier. This method is preferred because the light will be partially ready for baking.</li>
+					<li>Method 2: Set the &ldquo;Target&rdquo; in the <a href="#def_objectpanel">object panel</a> to another object.</li>
+				</ol>
+			</section>
+			<section id="cameras" name="Cameras">
+				<h2>Cameras</h2>
+				<ol>
+					<li>Add a camera object.</li>
+					<li>Set the &ldquo;Classname&rdquo; in the <a href="#def_objectpanel">object panel</a> to the correct <a href="#def_entities">entity</a> name.</li>
+					<li>Rotate and position the camera.</li>
+				</ol>
+			</section>
+		</section>
+		<section id="additional" name="Additional Information">
+			<h1>Additional Information</h1>
+			<section id="skybox" name="Sky-boxes">
+				<h2>Sky-boxes</h2>
+				<p>This tool rotates and renders a camera to generate the tga image set.  Located in the <a href="#def_miscpanel">misc panel</a>.</p>
+				<ul>
+					<li>Add or select a camera.</li>
+					<li>Rotate and position the camera.</li>
+					<li>Set all of the options and click &ldquo;Generate Skybox&rdquo;.</li>
+				</ul>
+			</section>
+			<section id="bsp" name="BSP Operations">
+				<h2>BSP Operations</h2>
+				<p>These features have been partially tested. The light-grid builder is very slow and does not produce quality results near walls.  Located in the <a href="#def_miscpanel">misc panel</a>.</p>
+			</section>
+			<section id="tips" name="Tips">
+				<h2>Tips</h2>
+				<ul>
+					<li>Try to keep the mesh vertex concentration low if they will be solid from auto-clip or brushes.</li>
+					<li>Optimizing the vis will reduce flickering entities, faces rendered, and the number of vis portals. See <a href="http://tremmapping.pbworks.com/w/page/22453205/Understanding%20Vis%20and%20Hint%20Brushes">Understanding Vis and Hint Brushes</a>.</li>
+					<li>If the map is too large and complex, games may be required to be launched with more memory.</li>
+				</ul>
+			</section>
+			<p></p>
+		</section>
+	</body>
+</html>
